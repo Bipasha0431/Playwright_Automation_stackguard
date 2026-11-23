@@ -1,0 +1,61 @@
+name: Playwright tests
+
+on:
+  pull_request:
+  # Manual run from the Actions tab: pick which suite to run.
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: Which tests to run
+        type: choice
+        options:
+          - all
+          - ui
+          - api
+        default: all
+
+concurrency:
+  group: playwright-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Pull requests always run everything; a manual run uses the chosen suite.
+      SUITE: ${{ inputs.suite || 'all' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      # The API suite needs no browser.
+      - name: Install Chromium
+        if: env.SUITE != 'api'
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright tests (${{ env.SUITE }})
+        run: |
+          case "$SUITE" in
+            ui)  npm run test:ui ;;
+            api) npm run test:api ;;
+            *)   npm test ;;
+          esac
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ env.SUITE }}
+          path: playwright-report/
+          retention-days: 14
