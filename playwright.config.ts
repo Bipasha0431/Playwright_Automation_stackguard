@@ -7,7 +7,12 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 2 : undefined,
   reporter: [['list'], ['html', { open: 'never' }]],
-  use: { trace: 'on-first-retry', screenshot: 'only-on-failure' },
+  
+  use: { 
+    trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    headless: !!process.env.CI,
+  },
   projects: [
     {
       name: 'ui',
