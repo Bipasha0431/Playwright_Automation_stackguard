@@ -68,10 +68,10 @@ All four bugs were found in the checkout flow with `standard_user` / `secret_sau
 **Steps**
 
 1. Sign in as `standard_user`, add Sauce Labs Backpack and open checkout step one.
-2. Enter a single space in **First Name**, in **Last Name** and in **Postal Code**.
-3. Click **Continue**.
+2. Enter a single space in **First Name** and in **Last Name**, and `560001` in **Postal Code**, then click **Continue**.
+3. Go back to step one, enter `Ada` and `Lovelace` in the names and a single space in **Postal Code**, then click **Continue**.
 
-**Expected:** The form rejects the values, starting with "Error: First Name is required", because a value made only of spaces is empty.
+**Expected:** Step 2 is rejected with "Error: First Name is required" and step 3 with "Error: Postal Code is required", because a value made only of spaces is empty.
 
 **Actual:** No error is shown and the overview (`/checkout-step-two.html`) opens. The same happens with a space in only one of the fields: a space in both names with a real postal code, or real names with a space as the postal code. Only completely empty fields are rejected.
 
