@@ -156,22 +156,28 @@ test.describe('Checkout Flow', () => {
     });
   });
 
-  test('SPEC-CHK-004 Whitespace-only names are accepted', async ({
+  test('SPEC-CHK-004 Whitespace-only values are accepted', async ({
     signedInInventory: inventoryPage,
     cartPage,
     checkoutPage,
   }) => {
-    test.fail(true, 'Known bug: whitespace-only names pass validation and the overview opens');
+    test.fail(true, 'Known bug: whitespace-only names and postal code pass validation and the overview opens');
 
     // 1. Open step one with one item in the cart
     await openStepOne(inventoryPage, cartPage, checkoutPage, [PRODUCTS.backpack]);
 
-    // 2. Enter a single space in first name and last name and 560001 in postal code
-    // 3. Click Continue
+    // 2. Enter a single space in first name and last name and 560001 in postal code, then click Continue
     await checkoutPage.submitInfo(' ', ' ', CUSTOMER.postalCode);
 
-    // Expected: the form rejects whitespace-only names with a required-field error
-    await expect(checkoutPage.errorBanner).toBeVisible();
+    // Expected: the form rejects the names with the first-name required error and stays on step one
+    await expect(checkoutPage.errorBanner).toHaveText('Error: First Name is required');
+    await checkoutPage.expectStepOne();
+
+    // 3. Enter Ada and Lovelace in the names and a single space in postal code, then click Continue
+    await checkoutPage.submitInfo(CUSTOMER.firstName, CUSTOMER.lastName, ' ');
+
+    // Expected: the form rejects the postal code with the postal-code required error and stays on step one
+    await expect(checkoutPage.errorBanner).toHaveText('Error: Postal Code is required');
     await checkoutPage.expectStepOne();
   });
 
